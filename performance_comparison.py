@@ -1,4 +1,6 @@
-import subprocess  
+from subprocess import PIPE, run
+import sys
+import shlex
 import numpy as np 
 import matplotlib.pyplot as plt
 import shutil
@@ -7,24 +9,23 @@ def wordcount(cmd):
     # Execute WordCount 3 times and compute the average execution time
     total_execution_time = 0
     for i in range(3):
-        temp = subprocess.Popen(cmd, stdout = subprocess.PIPE) 
-        # get the output
-        stdout, stderr = temp.communicate()
+    	# execute command and get output
+        output = run(shlex.split(cmd), stdout = PIPE, stderr = PIPE, universal_newlines=True).stderr
         # get user time
-        stdout=stdout.split("\n")
-        for line in stdout:
-            if line.startswith("user"):
-                print(line)
-        # remove output directory
+        for line in output.splitlines():
+            if "user" in line:
+                user_index = line.find("user")
+                user_time = float(line[:user_index])
+                print("user_time for execution ", i + 1 , ": ", user_time)
+                total_execution_time += user_time
+	# remove output directory
         try:
             shutil.rmtree(output_directory)
         except OSError as e:
             print("Error: %s - %s." % (e.filename, e.strerror))
-    # # TODO: make sure float divide by int outputs float
-    # average_time = total_execution_time / 3
-    # # TODO: add more detail to log
-    # print("average time: ", average_time)
-    # return average_time
+    average_time = round(total_execution_time / 3, 2)
+    print("average time: ", average_time)
+    return average_time
 
 def plot(hadoop, spark):
     X = ['Dataset1', 'Dataset2', 'Dataset3', 'Dataset4', 'Dataset5', 'Dataset6', 'Dataset7', 'Dataset8', 'Dataset9']
@@ -49,5 +50,5 @@ if __name__ == '__main__':
     hadoop_cmd = 'time hadoop jar /usr/local/hadoop-3.3.1/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.1.jar wordcount /home/azureuser/datasets/' + filename + ' ' + output_directory
     spark_cmd = 'time python3 /home/azureuser/wordcount.py /home/azureuser/datasets/' + filename + ' ' + output_directory
 
-    wordcount(hadoop_cmd)
+    # wordcount(hadoop_cmd)
     wordcount(spark_cmd)
