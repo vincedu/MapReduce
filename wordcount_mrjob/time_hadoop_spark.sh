@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-#usage:  time_hadoop_spark.sh "-r local" | "-r spark" | "-r hadoop"
+#usage:  time_hadoop_spark.sh "-r local" | "-r hadoop"
 
 cd /home/azureuser/hadoop 
 for file_to_count in $(cat filelist.txt) ; do
